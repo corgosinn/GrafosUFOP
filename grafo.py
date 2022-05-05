@@ -1,3 +1,7 @@
+from asyncio.windows_events import NULL
+from dis import dis
+
+
 class Grafo:
 
     def __init__(self, num_vert=0, num_arestas=0, lista_adj=None, mat_adj=None):
@@ -140,3 +144,49 @@ class Grafo:
             return False
         else:
             return True
+
+    def minDist(self, dist, Q):
+        min = float('inf')
+        for v in range(self.num_vert):
+            if dist[v] < min and Q.__contains__(v):
+                min = dist[v]
+                u = v
+                return u
+
+    def DIJKSTRA(self, s):
+
+        dist = [float('inf') for v in range(self.num_vert)]
+        pred = [NULL for v in range(self.num_vert)]
+        dist[s] = 0
+        u = 0
+        Q = [v for v in range(self.num_vert)]
+
+        while(len(Q) != 0):
+            u = self.minDist(dist, Q)
+            Q.remove(u)
+
+            for v in range(len(self.lista_adj[u])):
+                for i in range(len(self.lista_adj[u][v])):
+                    if dist[self.lista_adj[u][v][0]] > dist[u] + self.lista_adj[u][v][1]:
+                        dist[self.lista_adj[u][v][0]] = dist[u] + \
+                            self.lista_adj[u][v][1]
+                        pred[self.lista_adj[u][v][0]] = u
+        return dist
+
+    def definir_algoritmo(self, s):
+        busca_largura = True
+        valores_positivos = True
+        valor_negativo = False
+        for x in range(len(self.lista_adj)):
+            for y in range(len(self.lista_adj[x])):
+                if self.lista_adj[x][y][1] != 1:
+                    busca_largura = False
+                if self.lista_adj[x][y][1] < 0:
+                    valores_positivos = False
+        if busca_largura == True:
+            caminho = self.busca_largura(s)
+        elif valores_positivos == True:
+            caminho = self.DIJKSTRA(s)
+        else:
+            caminho = self.busca_largura(s)
+        return caminho
