@@ -78,17 +78,17 @@ class Grafo:
                     desc[v] = desc[u] + 1
                     pred[v] = u
         caminho = self.print_caminho(pred, s, destino)
-        self.soma_custo(caminho, 0, 1)
+        self.soma_custo(s, destino, desc, caminho, 1)
 
         return desc
 
     def minDist(self, dist, Q):
         min = float('inf')
         for v in range(self.num_vert):
-            if dist[v] < min and Q.__contains__(v):
+            if dist[v] < min and Q.count(v) > 0:
                 min = dist[v]
                 u = v
-                return u
+        return u
 
     def DIJKSTRA(self, s, destino):
 
@@ -101,15 +101,12 @@ class Grafo:
         while(len(Q) != 0):
             u = self.minDist(dist, Q)
             Q.remove(u)
-
-            for v in range(len(self.lista_adj[u])):
-                for i in range(len(self.lista_adj[u][v])):
-                    if dist[self.lista_adj[u][v][0]] > dist[u] + self.lista_adj[u][v][1]:
-                        dist[self.lista_adj[u][v][0]] = dist[u] + \
-                            self.lista_adj[u][v][1]
-                        pred[self.lista_adj[u][v][0]] = u
+            for (v1, v2) in self.lista_adj[u]:
+                if dist[v1] > dist[u] + v2:
+                    dist[v1] = dist[u] + v2
+                    pred[v1] = u
         caminho = self.print_caminho(pred, s, destino)
-        self.soma_custo(caminho, dist)
+        self.soma_custo(s, destino, dist, caminho)
         return dist
 
     def BELLMAN_FORD(self, s, destino):
@@ -117,26 +114,22 @@ class Grafo:
         pred = [NULL for v in range(self.num_vert)]
         dist[s] = 0
         for j in range(self.num_vert - 1):
+            mudou = 0
             for u in range(len(self.lista_adj)):
-                for v in range(len(self.lista_adj[u])):
-                    for i in range(len(self.lista_adj[u][v])):
+                for (v1, v2) in self.lista_adj[u]:
+                    mudou = 1
+                    if dist[v1] > dist[u] + v2:
+                        dist[v1] = dist[u] + v2
+                        pred[v1] = u
+            if mudou == 0:
+                break
 
-                        if dist[self.lista_adj[u][v][0]] > dist[u] + self.lista_adj[u][v][1]:
-                            dist[self.lista_adj[u][v][0]] = dist[u] + \
-                                self.lista_adj[u][v][1]
-                            pred[self.lista_adj[u][v][0]] = u
         caminho = self.print_caminho(pred, s, destino)
-        self.soma_custo(caminho, dist)
+        self.soma_custo(s, destino, dist, caminho)
         return dist
 
-    def soma_custo(self, caminho, dist, busca=0):
-        custo = 0
-        if (busca != 1):
-            custo = dist[len(caminho)-1]
-        else:
-            for v in caminho:
-                custo = custo + 1
-        print(f"Custo: {custo}")
+    def soma_custo(self, origem, destino, dist, caminho, busca=0):
+        print(f"Custo: {dist[destino]}")
 
     def print_caminho(self, pred, origem, destino):
         x = destino
