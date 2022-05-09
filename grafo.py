@@ -41,43 +41,6 @@ class Grafo:
         else:
             print("Aresta invalida!")
 
-    def grau(self, u):
-        """Retorna o grau do vertice u"""
-        return len(self.lista_adj[u])
-
-    def adjacente(self, u, v):
-        """Determina se v é adjacente a u"""
-        if self.mat_adj[u][v] != 0:
-            return True
-        else:
-            return False
-
-    def adjacentes_peso(self, u):
-        """Retorna a lista dos vertices adjacentes a u no formato (v, w)"""
-        return self.lista_adj[u]
-
-    def adjacentes(self, u):
-        """Retorna a lista dos vertices adjacentes a u"""
-        adj = []
-        for i in range(len(self.lista_adj[u])):
-            (v, w) = self.lista_adj[u][i]
-            adj.append(v)
-        return adj
-
-    def densidade(self):
-        """Retorna a densidade do grafo"""
-        return self.num_arestas / (self.num_vert * (self.num_vert - 1))
-
-    def subgrafo(self, g2):
-        """Determina se g2 e subgrafo de self"""
-        if g2.num_vert > self.num_vert:
-            return False
-        for i in range(len(g2.mat_adj)):
-            for j in range(len(g2.mat_adj[i])):
-                if g2.mat_adj[i][j] != 0 and self.mat_adj[i][j] == 0:
-                    return False
-        return True
-
     def ler_arquivo(self, nome_arq):
         """Le arquivo de grafo no formato dimacs"""
         try:
@@ -102,48 +65,22 @@ class Grafo:
         except IOError:
             print("Nao foi possivel encontrar ou ler o arquivo!")
 
-    def busca_largura(self, s):
-        """Retorna a ordem de descoberta dos vertices pela 
-           busca em largura a partir de s"""
-        desc = [0 for v in range(self.num_vert)]
+    def busca_largura(self, s, destino):
+        desc = [float("inf") for v in range(self.num_vert)]
+        pred = [NULL for v in range(self.num_vert)]
         Q = [s]
-        R = [s]
-        desc[s] = 1
+        desc[s] = 0
         while Q:
             u = Q.pop(0)
             for (v, w) in self.lista_adj[u]:
-                if desc[v] == 0:
+                if desc[v] == float("inf"):
                     Q.append(v)
-                    R.append(v)
-                    desc[v] = 1
-        return R
+                    desc[v] = desc[u] + 1
+                    pred[v] = u
+        caminho = self.print_caminho(pred, s, destino)
+        self.soma_custo(caminho, 0, 1)
 
-    def busca_profundidade(self, s):
-        desc = [0 for v in range(self.num_vert)]
-        S = [s]
-        R = [s]
-        desc[s] = 1
-        while(len(S) != 0):
-            u = S[len(S) - 1]
-            achou = 0
-            for (v, w) in self.lista_adj[u]:
-
-                if desc[v] == 0:
-                    achou = 1
-                    S.append(v)
-                    R.append(v)
-                    desc[v] = 1
-                    break
-
-            if achou == 1:
-                S.pop
-        return R
-
-    def conexo(self, s):
-        if len(self.busca_profundidade(s)) != self.num_vert:
-            return False
-        else:
-            return True
+        return desc
 
     def minDist(self, dist, Q):
         min = float('inf')
@@ -153,7 +90,7 @@ class Grafo:
                 u = v
                 return u
 
-    def DIJKSTRA(self, s):
+    def DIJKSTRA(self, s, destino):
 
         dist = [float('inf') for v in range(self.num_vert)]
         pred = [NULL for v in range(self.num_vert)]
@@ -171,22 +108,64 @@ class Grafo:
                         dist[self.lista_adj[u][v][0]] = dist[u] + \
                             self.lista_adj[u][v][1]
                         pred[self.lista_adj[u][v][0]] = u
+        caminho = self.print_caminho(pred, s, destino)
+        self.soma_custo(caminho, dist)
         return dist
 
-    def definir_algoritmo(self, s):
+    def BELLMAN_FORD(self, s, destino):
+        dist = [float('inf') for v in range(self.num_vert)]
+        pred = [NULL for v in range(self.num_vert)]
+        dist[s] = 0
+        for j in range(self.num_vert - 1):
+            for u in range(len(self.lista_adj)):
+                for v in range(len(self.lista_adj[u])):
+                    for i in range(len(self.lista_adj[u][v])):
+
+                        if dist[self.lista_adj[u][v][0]] > dist[u] + self.lista_adj[u][v][1]:
+                            dist[self.lista_adj[u][v][0]] = dist[u] + \
+                                self.lista_adj[u][v][1]
+                            pred[self.lista_adj[u][v][0]] = u
+        caminho = self.print_caminho(pred, s, destino)
+        self.soma_custo(caminho, dist)
+        return dist
+
+    def soma_custo(self, caminho, dist, busca=0):
+        custo = 0
+        if (busca != 1):
+            custo = dist[len(caminho)-1]
+        else:
+            for v in caminho:
+                custo = custo + 1
+        print(f"Custo: {custo}")
+
+    def print_caminho(self, pred, origem, destino):
+        x = destino
+        caminho = []
+        while(x != origem):
+            caminho.append(x)
+            x = pred[x]
+        caminho.append(origem)
+        caminho.reverse()
+
+        print(f"Caminho: {caminho}")
+        return caminho
+
+    def definir_algoritmo(self, s, destino):
         busca_largura = True
-        valores_positivos = True
         valor_negativo = False
         for x in range(len(self.lista_adj)):
             for y in range(len(self.lista_adj[x])):
                 if self.lista_adj[x][y][1] != 1:
                     busca_largura = False
                 if self.lista_adj[x][y][1] < 0:
-                    valores_positivos = False
+                    valor_negativo = True
         if busca_largura == True:
-            caminho = self.busca_largura(s)
-        elif valores_positivos == True:
-            caminho = self.DIJKSTRA(s)
+            print("Busca largura")
+            caminho = self.busca_largura(s, destino)
+        elif valor_negativo == False:
+            print("Dijkstra")
+            caminho = self.DIJKSTRA(s, destino)
         else:
-            caminho = self.busca_largura(s)
+            print("Bellman Ford")
+            caminho = self.BELLMAN_FORD(s, destino)
         return caminho

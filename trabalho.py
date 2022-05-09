@@ -1,6 +1,9 @@
+from colorsys import rgb_to_yiq
 from time import time
 import grafo
 import time
+
+# Thiago Corgosinho Silva - 20.2.8117
 
 # Recebe nome do arquivo
 arq = input("Digite o nome do arquivo: ")
@@ -17,11 +20,8 @@ g1.ler_arquivo(arqNome)
 print("Processando...")
 
 # Processa o caminho atravez dos algoritmos
-caminho = g1.definir_algoritmo(0)
+caminho = g1.definir_algoritmo(verticeOrigem, verticeDestino)
 
 
-# Printa na tela
-
-
-print(f"Caminho: {caminho}")
-print(f"{time.time()-inicioTime:.4f} segundos")
+# Printa na tela o tempo
+print(f"{round(time.time()-inicioTime,4)} segundos")
